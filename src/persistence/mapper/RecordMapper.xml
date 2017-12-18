@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="persistence.mapper.RecordMapper">
+  <resultMap id="BaseResultMap" type="persistence.domain.Record">
+    <id column="RECORD_ID_" jdbcType="INTEGER" property="recordId" />
+    <result column="IMAGE_ID_" jdbcType="VARCHAR" property="imageId" />
+    <result column="VIDEO_ID_" jdbcType="VARCHAR" property="videoId" />
+    <result column="SENDER_" jdbcType="VARCHAR" property="sender" />
+    <result column="RECEIVER_" jdbcType="VARCHAR" property="receiver" />
+  </resultMap>
+  <resultMap extends="BaseResultMap" id="ResultMapWithBLOBs" type="persistence.domain.Record">
+    <result column="TEXT_" jdbcType="LONGVARCHAR" property="text" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    RECORD_ID_, IMAGE_ID_, VIDEO_ID_, SENDER_, RECEIVER_
+  </sql>
+  <sql id="Blob_Column_List">
+    TEXT_
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="ResultMapWithBLOBs">
+    select 
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from chat_record
+    where RECORD_ID_ = #{recordId,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from chat_record
+    where RECORD_ID_ = #{recordId,jdbcType=INTEGER}
+  </delete>
+  <insert id="insert" parameterType="persistence.domain.Record">
+    insert into chat_record (RECORD_ID_, IMAGE_ID_, VIDEO_ID_, 
+      SENDER_, RECEIVER_, TEXT_
+      )
+    values (#{recordId,jdbcType=INTEGER}, #{imageId,jdbcType=VARCHAR}, #{videoId,jdbcType=VARCHAR}, 
+      #{sender,jdbcType=VARCHAR}, #{receiver,jdbcType=VARCHAR}, #{text,jdbcType=LONGVARCHAR}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="persistence.domain.Record">
+    insert into chat_record
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="recordId != null">
+        RECORD_ID_,
+      </if>
+      <if test="imageId != null">
+        IMAGE_ID_,
+      </if>
+      <if test="videoId != null">
+        VIDEO_ID_,
+      </if>
+      <if test="sender != null">
+        SENDER_,
+      </if>
+      <if test="receiver != null">
+        RECEIVER_,
+      </if>
+      <if test="text != null">
+        TEXT_,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="recordId != null">
+        #{recordId,jdbcType=INTEGER},
+      </if>
+      <if test="imageId != null">
+        #{imageId,jdbcType=VARCHAR},
+      </if>
+      <if test="videoId != null">
+        #{videoId,jdbcType=VARCHAR},
+      </if>
+      <if test="sender != null">
+        #{sender,jdbcType=VARCHAR},
+      </if>
+      <if test="receiver != null">
+        #{receiver,jdbcType=VARCHAR},
+      </if>
+      <if test="text != null">
+        #{text,jdbcType=LONGVARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="persistence.domain.Record">
+    update chat_record
+    <set>
+      <if test="imageId != null">
+        IMAGE_ID_ = #{imageId,jdbcType=VARCHAR},
+      </if>
+      <if test="videoId != null">
+        VIDEO_ID_ = #{videoId,jdbcType=VARCHAR},
+      </if>
+      <if test="sender != null">
+        SENDER_ = #{sender,jdbcType=VARCHAR},
+      </if>
+      <if test="receiver != null">
+        RECEIVER_ = #{receiver,jdbcType=VARCHAR},
+      </if>
+      <if test="text != null">
+        TEXT_ = #{text,jdbcType=LONGVARCHAR},
+      </if>
+    </set>
+    where RECORD_ID_ = #{recordId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKeyWithBLOBs" parameterType="persistence.domain.Record">
+    update chat_record
+    set IMAGE_ID_ = #{imageId,jdbcType=VARCHAR},
+      VIDEO_ID_ = #{videoId,jdbcType=VARCHAR},
+      SENDER_ = #{sender,jdbcType=VARCHAR},
+      RECEIVER_ = #{receiver,jdbcType=VARCHAR},
+      TEXT_ = #{text,jdbcType=LONGVARCHAR}
+    where RECORD_ID_ = #{recordId,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="persistence.domain.Record">
+    update chat_record
+    set IMAGE_ID_ = #{imageId,jdbcType=VARCHAR},
+      VIDEO_ID_ = #{videoId,jdbcType=VARCHAR},
+      SENDER_ = #{sender,jdbcType=VARCHAR},
+      RECEIVER_ = #{receiver,jdbcType=VARCHAR}
+    where RECORD_ID_ = #{recordId,jdbcType=INTEGER}
+  </update>
+</mapper>

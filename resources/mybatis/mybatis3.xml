@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+       http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+       http://www.springframework.org/schema/context
+       http://www.springframework.org/schema/context/spring-context-3.2.xsd
+       http://www.springframework.org/schema/tx
+       http://www.springframework.org/schema/tx/spring-tx-3.2.xsd">
+
+    <!--引入jdbc配置文件,整个项目只允许存在一个property-placeholder，否则会重写-->
+    <context:property-placeholder location="classpath:sys/db-config.properties" />
+    <context:component-scan base-package="persistence.mapper"/>
+    <!-- 1. 数据源 : DriverManagerDataSource -->
+    <bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+        <property name="driverClassName" value="${jdbc.driver}"/>
+        <property name="url" value="${jdbc.url}"/>
+        <property name="username" value="${jdbc.username}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+    <!-- 2. mybatis 的 SqlSession 的工厂: SqlSessionFactoryBean
+    dataSource：引用数据源
+    typeAliasesPackage：指定实体类的包名，自动实体类的简单类名映射成别名-->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <!-- 声明别名，这样的话，在mapper xml文件描述类名时就可以不用完整路径了(即不用加包名了)-->
+        <property name="typeAliasesPackage" value="persistence.domain"/>
+        <!--扫描mapper的xml文件-->
+        <property name="mapperLocations" value="classpath:persistence/mapper/**.xml"/>
+    </bean>
+
+    <!-- 自动扫描mybatis定义的dao(mapper)类  ，spring扫描到这些dao类之后，就会向spring容器注册这些dao类对象-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="persistence.mapper"/>
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"/>
+    </bean>
+    <!-- 4. 事务管理 : DataSourceTransactionManager
+    dataSource：引用上面定义的数据源-->
+    <bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"/>
+    </bean>
+    <!-- 5. 使用声明式事务
+    transaction-manager：引用上面定义的事务管理器-->
+    <tx:annotation-driven transaction-manager="txManager"/>
+
+</beans>

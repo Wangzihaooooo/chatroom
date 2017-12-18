@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="persistence.mapper.UserMapper">
+  <resultMap id="BaseResultMap" type="persistence.domain.User">
+    <id column="USERNAME_" jdbcType="VARCHAR" property="username" />
+    <result column="PASSWORD_" jdbcType="VARCHAR" property="password" />
+    <result column="SEX_" jdbcType="VARCHAR" property="sex" />
+    <result column="AGE_" jdbcType="INTEGER" property="age" />
+    <result column="PHONE_" jdbcType="VARCHAR" property="phone" />
+    <result column="IMAGE_" jdbcType="VARCHAR" property="image" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    USERNAME_, PASSWORD_, SEX_, AGE_, PHONE_, IMAGE_
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user
+    where USERNAME_ = #{username,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from sys_user
+    where USERNAME_ = #{username,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="persistence.domain.User">
+    insert into sys_user (USERNAME_, PASSWORD_, SEX_, 
+      AGE_, PHONE_, IMAGE_)
+    values (#{username,jdbcType=VARCHAR}, #{password,jdbcType=VARCHAR}, #{sex,jdbcType=VARCHAR}, 
+      #{age,jdbcType=INTEGER}, #{phone,jdbcType=VARCHAR}, #{image,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="persistence.domain.User">
+    insert into sys_user
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="username != null">
+        USERNAME_,
+      </if>
+      <if test="password != null">
+        PASSWORD_,
+      </if>
+      <if test="sex != null">
+        SEX_,
+      </if>
+      <if test="age != null">
+        AGE_,
+      </if>
+      <if test="phone != null">
+        PHONE_,
+      </if>
+      <if test="image != null">
+        IMAGE_,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="username != null">
+        #{username,jdbcType=VARCHAR},
+      </if>
+      <if test="password != null">
+        #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="sex != null">
+        #{sex,jdbcType=VARCHAR},
+      </if>
+      <if test="age != null">
+        #{age,jdbcType=INTEGER},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="image != null">
+        #{image,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="persistence.domain.User">
+    update sys_user
+    <set>
+      <if test="password != null">
+        PASSWORD_ = #{password,jdbcType=VARCHAR},
+      </if>
+      <if test="sex != null">
+        SEX_ = #{sex,jdbcType=VARCHAR},
+      </if>
+      <if test="age != null">
+        AGE_ = #{age,jdbcType=INTEGER},
+      </if>
+      <if test="phone != null">
+        PHONE_ = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="image != null">
+        IMAGE_ = #{image,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where USERNAME_ = #{username,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="persistence.domain.User">
+    update sys_user
+    set PASSWORD_ = #{password,jdbcType=VARCHAR},
+      SEX_ = #{sex,jdbcType=VARCHAR},
+      AGE_ = #{age,jdbcType=INTEGER},
+      PHONE_ = #{phone,jdbcType=VARCHAR},
+      IMAGE_ = #{image,jdbcType=VARCHAR}
+    where USERNAME_ = #{username,jdbcType=VARCHAR}
+  </update>
+</mapper>

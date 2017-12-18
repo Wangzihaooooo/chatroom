@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
+<!--xmlns:log4j="http://jakarta.apache.org/log4j/"-->
+<log4j:configuration >
+    <appender name="Console" class="org.apache.log4j.ConsoleAppender">
+        <!-- 输出内容格式 -->
+        <layout class="org.apache.log4j.PatternLayout">
+            <param name="ConversionPattern" value="%-5p %d{MM-dd HH:mm:ss,SSS} %m (%F:%L) \n" />
+        </layout>
+    </appender>
+
+    <root>
+        <level value="DEBUG" />
+        <!--<appender-ref ref="FILE" />   &lt;!&ndash;将日志输出到文件中&ndash;&gt;-->
+        <!--<appender-ref ref="STDOUT" />  将日志输出到控制台中-->
+        <appender-ref ref="Console"/>
+    </root>
+</log4j:configuration>
