@@ -37,6 +37,7 @@
 
     <!--  Plugin for the Wizard -->
     <script src="../assets/js/material-bootstrap-wizard.js"></script>
+    <script src="../js/ajaxfileupload.js"></script>
 
     <!--  More information about jquery.validate here: http://jqueryvalidation.org/	 -->
     <script src="../js/jquery.validate.min.js"></script>
@@ -59,6 +60,7 @@
                     alert("密码两次不一致");
                     return false;
                 }
+
                 var registerform=$("#registerform").serialize();
                 $.ajax({
                     type : "POST",
@@ -72,8 +74,23 @@
                             alert(result["message"]);
                         }
                     }
+                })
+                $.ajaxFileUpload({
+                    url : "upload",
+                    secureuri : false,
+                    async:false,
+                    fileElementId : "wizard-picture",
+                    enctype:'multipart/form-data',//注意一定要有该参数
+                    success : function(data) {
+                    },
+                    error : function(data) {
+                        //上传失败
+                    }
                 });
-            })
+            });
+            function ajaxFileUpload() {
+
+            }
         });
     </script>
 </head>
@@ -94,7 +111,7 @@
                 <!--      Wizard container        -->
                 <div class="wizard-container">
                     <div class="card wizard-card" data-color="green" id="wizardProfile">
-                        <form action="register" method="post" id="registerform">
+                        <form action="register" method="post" id="registerform" enctype="multipart/form-data">
                             <!--        You can switch " data-color="purple" "  with one of the next bright colors: "green", "orange", "red", "blue"       -->
                             <div class="wizard-header">
                                 <h3 class="wizard-title">
@@ -114,15 +131,15 @@
                                 <div class="tab-pane" id="about">
                                     <div class="row">
                                         <h4 class="info-text"> Let's start with the basic information</h4>
-                                        <div class="col-sm-4 col-sm-offset-1" style="padding-top: 55px;">
-                                            <div class="picture-container">
-                                                <div class="picture">
-                                                    <img src="../assets/img/default-avatar.png" class="picture-src" id="wizardPicturePreview" title=""/>
-                                                    <input type="file" id="wizard-picture">
+                                            <div class="col-sm-4 col-sm-offset-1" style="padding-top: 55px;">
+                                                <div class="picture-container">
+                                                    <div class="picture">
+                                                        <img src="../assets/img/default-avatar.png" class="picture-src" id="wizardPicturePreview" title=""/>
+                                                        <input  name="file" type="file" id="wizard-picture" onchange="ajaxFileUpload();"/>
+                                                    </div>
+                                                    <h6>请选择头像</h6>
                                                 </div>
-                                                <h6>请选择头像</h6>
                                             </div>
-                                        </div>
                                         <div class="col-sm-6">
                                             <div class="input-group">
 													<span class="input-group-addon">

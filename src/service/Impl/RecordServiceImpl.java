@@ -6,6 +6,8 @@ import persistence.mapper.RecordMapper;
 import service.RecordService;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class RecordServiceImpl implements RecordService{
@@ -23,9 +25,18 @@ public class RecordServiceImpl implements RecordService{
     }
 
     @Override
-    public void getRecordByTime(int key) {
+    public List<Record> getRecordByRelation(String sender, String receiver) {
+        return recordMapper.selectByRelation(sender,receiver);
+    }
 
-        recordMapper.selectByPrimaryKey(key);
+    @Override
+    public List<Record> getRecordToBroadcast() {
+        return recordMapper.selectToBroadcast("");
+    }
+
+    @Override
+    public List<Record> getRecordToBroadcast(String receiver) {
+        return recordMapper.selectToBroadcast(receiver);
     }
 
 }

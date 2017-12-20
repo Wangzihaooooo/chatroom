@@ -9,6 +9,18 @@ public class User {
 
     private Integer age;
 
+    @Override
+    public String toString() {
+        return "User{" +
+                "username='" + username + '\'' +
+                ", password='" + password + '\'' +
+                ", sex='" + sex + '\'' +
+                ", age=" + age +
+                ", phone='" + phone + '\'' +
+                ", image='" + image + '\'' +
+                '}';
+    }
+
     private String phone;
 
     private String image;

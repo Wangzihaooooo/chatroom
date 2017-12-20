@@ -275,13 +275,21 @@
     <script language="JavaScript">
         (function () {
             var Message;
+            var userList;
             Message = function (arg) {
-                this.text = arg.text, this.message_side = arg.message_side;
+                this.text = arg.text;
+                this.username=arg.username;
+                this.image=arg.image;
+                this.message_side = arg.message_side;
                 this.draw = function (_this) {
                     return function () {
                         var $message;
                         $message = $($('.message_template').clone().html());
                         $message.addClass(_this.message_side).find('.text').html(_this.text);
+                        if(_this.image!=="") {
+                            $message.find('.img-circle').attr("src",_this.image);
+                        }
+                        $message.find('#message_username').html(_this.username);
                         $('.messages').append($message);
                         return setTimeout(function () {
                             return $message.addClass('appeared');
@@ -292,13 +300,12 @@
             };
             $(function () {
                 var getMessageText, message_side, sendMessage;
-                message_side = 'right';
                 getMessageText = function () {
                     var $message_input;
                     $message_input = $('.message_input');
                     return $message_input.val();
                 };
-                sendMessage = function (text) {
+                sendMessage = function (text,username,image,message_side) {
                     var $messages, message;
                     if (text.trim() === '') {
                         return;
@@ -306,16 +313,17 @@
                     $messages = $('.messages');
                     message = new Message({
                         text: text,
+                        username:username,
+                        image:image,
                         message_side: message_side
                     });
                     message.draw();
-                    return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
+                    return $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 0);
                 };
                 $('.send_message').click(function (e) {
-                    sendMessage(getMessageText());
                     var message = $("#message_input").val();
-                    var list_username=$("#list_username").text();
-                    var to = list_username === "全体成员"? "": list_username;
+                    var list_username=$("#chat_title").text();
+                    var to = list_username.trim() === "全体成员"? "": list_username;
                     ws.send(JSON.stringify({
                         message : {
                             content : message,//输入框的内容
@@ -328,19 +336,8 @@
                 });
                 $('.message_input').keyup(function (e) {
                     if (e.which === 13) {
-                        return sendMessage(getMessageText());
+                        $('.send_message').trigger("click");
                     }
-                });
-                $('#member_list_li').click(function () {
-                    ws.send(JSON.stringify({
-                        message : {
-                            content : message,//输入框的内容
-                            from : '${user.username}',//'{user.getUsername()}',//登录成功后保存在Session.attribute中的username
-                            to : to      //接收人,如果没有则置空,如果有多个接收人则用,分隔
-                        },
-                        type : "message"
-                    }));
-                    $('#message_template').load("../message_template.html");
                 });
             });
             var imgData =null;   //base64类型的图片数据
@@ -399,11 +396,15 @@
                 if(message.type === "message"){      //会话消息
                     showChat(message.message);
                 }
+                if(message.type === "record"){      //会话消息
+                    showRecord(message.recordList);
+                }
                 if(message.type === "image"){        //图片消息
                     showImage(message.message);
                 }
-                if(message.list !== null && message.list !== undefined){      //在线列表
-                    showOnline(message.list);
+                if(message.userList !== null && message.userList !== undefined){      //在线列表
+                    userList=message.userList;
+                    showOnline(message.userList);
                 }
             }
 
@@ -411,70 +412,148 @@
              * 展示会话信息
              */
             function showChat(message){
-                if(message.to===""||message.to===null){
-                    var $messages, _message;
-                    if (message.content.trim() === '') {
-                        return;
-                    }
+                var message_side='right';
+                var message_user_image='${user.image}';
+                var message_to=message.to.trim();
+                if(message.to.trim()===""){
+                    message_to="全体成员"
+                }
+                if(message.from.trim()==='${user.username}'.trim()){
                     $messages = $('.messages');
                     _message = new Message({
                         text: message.content,
-                        message_side:  'left'
+                        username:'${user.username}',
+                        image:message_user_image,
+                        message_side: message_side
                     });
                     _message.draw();
-                    $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 300);
-                }else {
+                    $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 0);
+                }else if($('#chat_title').text().trim()===message_to){
+                    message_side='left';
+                    $.each(userList,function(i,item){
+                        if(message.from.trim()===item.username) {
+                            message_user_image=item.image;
+                        }
+                    });
+                    $messages = $('.messages');
+                    _message = new Message({
+                        text: message.content,
+                        username:'${user.username}',
+                        image:message_user_image,
+                        message_side: message_side
+                    });
+                    _message.draw();
+                    $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 0);
+                }
 
                 }
-            }
-            /**
-             * 展示在线列表
-             */
-            function showOnline(list){
-                $(".list-unstyled").html("");    //清空在线列表
-                $.each(list, function(index, item){     //添加私聊按钮
-                    var li ="";
-                    if('${user.username}'!==item.username){    //排除自己
-                        li = "<li class=\"left clearfix\" id=\"member_list_li\">\n" +
-                            "                <span class=\"chat-img pull-left\">\n" +
-                            "                <img src=\"../img/all.png\" alt=\"User Avatar\" class=\"img-circle\">\n" +
-                            "                </span>\n" +
-                            "                <div class=\"chat-body clearfix\">\n" +
-                            "                <div class=\"header_sec\">\n" +
-                            "                <strong class=\"primary-font\" id=\"list_username\">"+item.username+
-                            "</strong> <strong class=\"pull-right\">09:45</strong>\n" +
-                            "            </div>\n" +
-                            "            <div class=\"contact_sec\">\n" +
-                            "                <span class=\"primary-font\" style=\"font-weight: normal\">hello</span> " +
-                            "<span class=\"badge pull-right\">3</span>\n" +
-                            "            </div>\n" +
-                            "            </div>\n" +
-                            "            </li>";
+
+                function showRecord(message){
+                    var message_side;
+                    var message_user_image;
+                    $('.messages').empty();
+                    $.each(message,function(i,item){
+                        if(item.sender=== '${user.username}'){
+                            message_side='right';
+                        }else {
+                            message_side='left';
+                        }
+
+                        var $messages, _message;
+                        if (item.text.trim() === '') {
+                            return;
+                        }
+                        $.each(userList,function(i1,item1){
+                            if(item.sender===item1.username) {
+                                message_user_image=item1.image;
+                            }
+                        });
+
+                        $messages = $('.messages');
+                        _message = new Message({
+                            text: item.text,
+                            username:item.sender,
+                            image:message_user_image,
+                            message_side:  message_side
+                        });
+                        _message.draw();
+                        $messages.animate({ scrollTop: $messages.prop('scrollHeight') }, 0);
+                    });
+                }
+                /**
+                 * 展示在线列表
+                 */
+                function showOnline(list){
+                    $(".list-unstyled").html("");    //清空在线列表
+                    $.each(list, function(index, item){     //添加私聊按钮
+                        var li ="";
+                        var image=item.image;
+                        var username=item.username;
+                        if(username==="全体成员"){
+                            image="../img/all.png"
+                        }
+                        if('${user.username}'!==item.username){    //排除自己
+                            li = "<li class=\"left clearfix\" >\n" +
+                                " <span class=\"chat-img pull-left\">\n" +
+                                " <img src="+'"'+image+'"'+" alt=\"User Avatar\" class=\"img-circle\"></span>\n" +
+                                " <div class=\"chat-body clearfix\">\n" +
+                                " <div class=\"header_sec\">\n" +
+                                " <strong class=\"primary-font\" >"+username+
+                                " </strong> <strong class=\"pull-right\">09:45</strong></div>\n" +
+                                " <div class=\"contact_sec\">\n" +
+                                " <span class=\"primary-font\" style=\"font-weight: normal\"></span></div></div></li>";
+                        }
+                        $(".list-unstyled").append(li);
+                    });
+                    $('.member_list .list-unstyled li').on('click',function(){
+                        $("#message_input").removeAttr("readonly");
+                        $("#message_input").removeAttr("placeholder");
+                        var list_username=$(this).find('.primary-font').text();
+                        var to = list_username.trim() === "全体成员"? "": list_username;
+                        $("#chat_title").text(list_username);
+                        ws.send(JSON.stringify({
+                            message : {
+                                content : "",//输入框的内容
+                                from : '${user.username}',//'{user.getUsername()}',//登录成功后保存在Session.attribute中的username
+                                to : to      //接收人,如果没有则置空,如果有多个接收人则用,分隔
+                            },
+                            type : "record"
+                        }));
+                    });
+                }
+
+                /**
+                 * 添加接收人
+                 */
+                function addChat(user){
+                    var sendto = $("#sendto");
+                    var receive = sendto.text().trim() == "全体成员" ? "" : sendto.text() + ",";
+                    if(receive.indexOf(user) == -1){    //排除重复
+                        sendto.text(receive + user);
                     }
-                    $(".list-unstyled").append(li);
-                });
-            }
-
-            /**
-             * 添加接收人
-             */
-            function addChat(user){
-                var sendto = $("#sendto");
-                var receive = sendto.text() == "全体成员" ? "" : sendto.text() + ",";
-                if(receive.indexOf(user) == -1){    //排除重复
-                    sendto.text(receive + user);
                 }
-            }
 
-            /**
-             * 发送系统消息
-             * @param innerHTML
-             */
-            function setMessageInnerHTML(innerHTML) {
-                alert(innerHTML);
-            };
+                /**
+                 * 发送系统消息
+                 * @param innerHTML
+                 */
+                function setMessageInnerHTML(innerHTML) {
+                    $("#sys_notice").append(innerHTML+"<br/>")
+                };
+                function uploadImage() {
 
-        }.call(this));
+                    var img = document.getElementById('img')
+                        , imgShow = document.getElementById('imgShow')
+                        , message = document.getElementById('message')
+                    var imgFile = new FileReader();
+                    imgFile.readAsDataURL(img.files[0]);
+                    imgFile.onload = function () {
+                        imgData = this.result; //base64数据
+                        imgShow.setAttribute('src', imgData);
+                    }
+                }
+
+            }.call(this));
 
 
     </script>
@@ -487,7 +566,10 @@
             <div class="button minimize"></div>
             <div class="button maximize"></div>
         </div>
-        <div class="title">Chat</div>
+        <div class="title">
+            <strong style="margin-left: 120px" id="chat_title">Chat</strong>
+            <span id="sys_notice"  class="title" style="font-size: 12px;margin-top:5px;margin-right: 10px;float:right "></span>
+        </div>
     </div>
     <div class="col-sm-3 chat_sidebar">
         <div class="row">
@@ -501,7 +583,7 @@
     <ul class="messages"></ul>
     <div class="bottom_wrapper clearfix">
         <div class="message_input_wrapper">
-            <input class="message_input" id="message_input" placeholder="Type your message here..." />
+            <input class="message_input" id="message_input"  readonly = "readonly" placeholder="choose friend you would chat in the left userList..." />
         </div>
         <div class="send_message">
             <div class="icon"></div>
@@ -510,8 +592,9 @@
     </div>
     <div class="message_template">
         <li class="message">
-            <div class="avatar"></div>
+            <div class="avatar"><img  style="max-width:100%;height:100%;object-fit:cover;" class="img-circle"/></div>
             <div class="text_wrapper">
+                <span id="message_username"></span>
                 <div class="text" id="chat_text"></div>
             </div>
         </li>

@@ -17,10 +17,25 @@
     </facet>
     <facet type="Spring" name="Spring">
       <configuration>
-        <fileset id="fileset" name="Mybatis3" removed="false">
-          <file>file://$MODULE_DIR$/resources/mybatis/mybatis3.xml</file>
+        <fileset id="web application context" name="MVC application context" removed="true">
           <file>file://$MODULE_DIR$/resources/spring/spring4.xml</file>
+        </fileset>
+        <fileset id="web springmvc servlet context" name="MVC springmvc servlet context" removed="true">
           <file>file://$MODULE_DIR$/resources/spring/springmvc.xml</file>
+        </fileset>
+        <fileset id="fileset" name="Spring Application Context" removed="false">
+          <file>file://$MODULE_DIR$/webapp/WEB-INF/classes/mybatis/mybatis3.xml</file>
+          <file>file://$MODULE_DIR$/webapp/WEB-INF/classes/mybatis3.xml</file>
+          <file>file://$MODULE_DIR$/resources/mybatis/mybatis3.xml</file>
+          <file>file://$MODULE_DIR$/webapp/WEB-INF/classes/spring/spring4.xml</file>
+          <file>file://$MODULE_DIR$/webapp/WEB-INF/classes/spring4.xml</file>
+          <file>file://$MODULE_DIR$/resources/spring/spring4.xml</file>
+          <file>file://$MODULE_DIR$/webapp/WEB-INF/classes/spring/springmvc.xml</file>
+          <file>file://$MODULE_DIR$/webapp/WEB-INF/classes/springmvc.xml</file>
+          <file>file://$MODULE_DIR$/resources/spring/springmvc.xml</file>
+          <file>file://$MODULE_DIR$/webapp/WEB-INF/classes/springUtil.xml</file>
+          <file>file://$MODULE_DIR$/webapp/WEB-INF/classes/spring/springUtil.xml</file>
+          <file>file://$MODULE_DIR$/resources/spring/springUtil.xml</file>
         </fileset>
       </configuration>
     </facet>
@@ -48,6 +63,8 @@
     <orderEntry type="library" name="Maven: org.springframework:spring-aop:4.3.10.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-context-support:4.3.10.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: org.springframework:spring-oxm:4.3.10.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-messaging:4.3.10.RELEASE" level="project" />
+    <orderEntry type="library" name="Maven: org.springframework:spring-websocket:4.3.10.RELEASE" level="project" />
     <orderEntry type="library" name="Maven: aopalliance:aopalliance:1.0" level="project" />
     <orderEntry type="library" name="Maven: cglib:cglib-nodep:3.2.5" level="project" />
     <orderEntry type="library" name="Maven: commons-logging:commons-logging:1.2" level="project" />

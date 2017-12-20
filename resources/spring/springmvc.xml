@@ -12,7 +12,7 @@
     <!-- 自动扫描base-package下面的包和子包下面的java文件，实现支持注解的IOC
     如果扫描到spring相关注释的类，则把这些类注册为spring的bean-->
     <context:component-scan base-package="controller,service" />
-
+    <bean id="springUtil" class="util.SpringUtil"/>
     <!-- 启动Springmvc注解驱动 -->
     <mvc:annotation-driven/>
     <!-- 返回json 方法一 需要导入 fastjson.jar包 -->

@@ -25,6 +25,22 @@
     from chat_record
     where RECORD_ID_ = #{recordId,jdbcType=INTEGER}
   </select>
+  <select id="selectByRelation"  resultMap="ResultMapWithBLOBs">
+    select
+    <include refid="Base_Column_List" />
+    ,
+    <include refid="Blob_Column_List" />
+    from chat_record
+    where (SENDER_ = #{sender,jdbcType=VARCHAR} and RECEIVER_= #{recevier,jdbcType=VARCHAR}) or (SENDER_ = #{recevier,jdbcType=VARCHAR} and RECEIVER_= #{sender,jdbcType=VARCHAR})
+  </select>
+    <select id="selectToBroadcast"  resultMap="ResultMapWithBLOBs">
+        select
+        <include refid="Base_Column_List" />
+        ,
+        <include refid="Blob_Column_List" />
+        from chat_record
+        where RECEIVER_= #{recevier,jdbcType=VARCHAR}
+    </select>
   <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
     delete from chat_record
     where RECORD_ID_ = #{recordId,jdbcType=INTEGER}

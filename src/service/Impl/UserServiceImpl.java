@@ -6,6 +6,7 @@ import persistence.domain.User;
 import persistence.mapper.UserMapper;
 import service.UserService;
 import javax.annotation.Resource;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -62,6 +63,11 @@ public class UserServiceImpl implements UserService {
             result.setMessage("账号已经存在");
         }
         return result;
+    }
+
+    @Override
+    public List<User> getAllUser() {
+        return userMapper.selectAll();
     }
 
 

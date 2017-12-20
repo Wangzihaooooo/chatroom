@@ -7,8 +7,8 @@ import persistence.domain.User;
 import service.RecordService;
 import service.UserService;
 import util.HttpSessionConfigurator;
+import util.SpringUtil;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpSession;
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
@@ -25,17 +25,19 @@ import java.util.concurrent.CopyOnWriteArraySet;
   */
 @ServerEndpoint(value = "/chatcontroller", configurator = HttpSessionConfigurator.class)
 public class ChatController {
-    @Resource
-    private RecordService recordService;
     private static int  onlineCount  = 0; //静态变量，用来记录当前在线连接数。应该把它设计成线程安全的。
     //concurrent包的线程安全Set，用来存放每个客户端对应的WebSocket对象。若要实现服务端与单一客户端通信的话，可以使用Map来存放，其中Key可以为用户标识
     private static CopyOnWriteArraySet<ChatController> webSocketSet = new CopyOnWriteArraySet<ChatController>();
     private Session     session;    //与某个客户端的连接会话，需要通过它来给客户端发送数据
     private User         user;
     private HttpSession httpSession;    //request的session
-    private static User all_user=new User();
-    private static List list     = new ArrayList<User>();   //在线列表,记录用户名称
-    private static Map  routetab = new HashMap<>();  //用户名和websocket的session绑定的路由表
+    private static User          all_user      =new User();
+    private static List          list          = new ArrayList<User>();   //在线列表,记录用户名称
+    private  List          userlist      = new ArrayList<User>();
+    private static Map           routetab      = new HashMap<>();  //用户名和websocket的session绑定的路由表
+    private        List<Record>  recordList    =new ArrayList<>();
+    private        RecordService recordService = (RecordService) SpringUtil.getBean("recordServiceImpl");
+    private        UserService   userService          = (UserService) SpringUtil.getBean("userServiceImpl");
 
     /**
      * 连接建立成功调用的方法
@@ -47,15 +49,23 @@ public class ChatController {
         webSocketSet.add(this);     //加入set中
         addOnlineCount();           //在线数加1;
         this.httpSession = (HttpSession) config.getUserProperties().get(HttpSession.class.getName());
-        this.user=(User) httpSession.getAttribute("userSession");    //获取当前用户
+        this.user=(User) httpSession.getAttribute("user");    //获取当前用户
         all_user.setUsername("全体成员");
         if(! list.contains(all_user)){
             list.add(all_user);
         }
         list.add(user);           //将用户名加入在线列表
         routetab.put(user.getUsername(), session);   //将用户名和session绑定到路由表
+        User _user=new User();
+        _user.setUsername("全体成员");
+        userlist.add(_user);
+        userlist.addAll(userService.getAllUser());
         String message = getMessage("[" + user.getUsername() + "]加入聊天室,当前在线人数为"+getOnlineCount()+"位", "notice",  list);
-        broadcast(message);     //广播
+        JSONObject member = new JSONObject();
+        //member.put("type", "record");
+        //member.put("recordList", recordService.getRecordToBroadcast());
+        member.put("userList",userlist);
+        broadcast(member.toString());     //广播
     }
 
     /**
@@ -74,20 +84,64 @@ public class ChatController {
     public void onMessage(String _message) {
         JSONObject chat = JSON.parseObject(_message);
         JSONObject message = JSON.parseObject(chat.get("message").toString());
-        Record record=new Record();
-        record.setText(message.get("content").toString());
-        record.setSender(message.get("from").toString());
-        if(message.get("to") == null || message.get("to").equals("")){      //如果to为空,则广播;如果不为空,则对指定的用户发送消息
-            httpSession.setAttribute("record",record);
-            broadcast(_message);
-        }else{
-            String [] userlist = message.get("to").toString().split(",");
+        String to=message.get("to").toString();
+        String from=message.getString("from");
+        if(chat.get("type").toString().equals("record")){
+            if(message.get("to") == null || message.get("to").equals("")){
+                recordList=recordService.getRecordToBroadcast();
+                JSONObject member = new JSONObject();
+                member.put("type", "record");
+                member.put("recordList", recordList);
+                _message=member.toString();
+                for(ChatController socket: webSocketSet){
+                    if(socket.user.getUsername().equals(from)){
+                        try {
+                            socket.session.getBasicRemote().sendText(_message);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }else {
+                recordList=recordService.getRecordByRelation(from,to);
+                JSONObject member = new JSONObject();
+                member.put("type", "record");
+                member.put("recordList", recordList);
+                _message=member.toString();
+                for(ChatController socket: webSocketSet){
+                    if(socket.user.getUsername().equals(from)){
+                        try {
+                            socket.session.getBasicRemote().sendText(_message);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+
+        }
+        else if(chat.get("type").toString().equals("message")){
+            Record record=new Record();
+            record.setText(message.get("content").toString());
+            record.setSender(message.get("from").toString());
             record.setReceiver(message.get("to").toString());
             recordService.addRecord(record);
-            singleSend(_message, (Session) routetab.get(message.get("from")));      //发送给自己,这个别忘了
-            for(String user : userlist){
-                if(!user.equals(message.get("from"))){
-                    singleSend(_message, (Session) routetab.get(user));     //分别发送给每个指定用户
+            if(message.get("to") == null || message.get("to").equals("")){      //如果to为空,则广播;如果不为空,则对指定的用户发送消息
+                broadcast(_message);
+            }else{
+                String [] userlist = to.split(",");
+                //singleSend(_message, (Session) routetab.get(from));      //发送给自己,这个别忘了
+                for(String user : userlist){
+                    for(ChatController socket: webSocketSet){
+                        if(socket.user.getUsername().equals(user.trim())||socket.user.getUsername().equals(from.trim())){
+                            try {
+                                socket.session.getBasicRemote().sendText(_message);
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                continue;
+                            }
+                        }
+                    }
                 }
             }
         }

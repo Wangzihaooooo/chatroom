@@ -4,6 +4,8 @@ package service;
 import persistence.domain.Result;
 import persistence.domain.User;
 
+import java.util.List;
+
 /**
  * The interface User service.
  */
@@ -45,4 +47,6 @@ public interface UserService {
      * @return
      */
     Result checkRegisterUser(User user);
+
+    List<User> getAllUser();
 }

@@ -9,6 +9,18 @@ public class Record {
 
     private String sender;
 
+    @Override
+    public String toString() {
+        return "Record{" +
+                "recordId=" + recordId +
+                ", imageId='" + imageId + '\'' +
+                ", videoId='" + videoId + '\'' +
+                ", sender='" + sender + '\'' +
+                ", receiver='" + receiver + '\'' +
+                ", text='" + text + '\'' +
+                '}';
+    }
+
     private String receiver;
 
     private String text;
